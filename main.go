@@ -58,7 +58,7 @@ func init() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
-var local = flag.String("local", "default", "on local")
+var local = flag.String("local", "", "on local")
 
 func main() {
 	flag.Parse()
@@ -78,7 +78,7 @@ func main() {
 	// localTester()
 
 	if *local != "" {
-		fmt.Println("localだよ")
+		log.Println("localだよ")
 		localTester()
 	} else {
 		solver()
@@ -148,14 +148,15 @@ func localTester() {
 	var score float64
 	for k := 0; k < 1000; k++ {
 		route := ask(asks[k].s.i, asks[k].s.j, asks[k].t.i, asks[k].t.j)
-		dest := restore(asks[k].s, asks[k].t, route)
-		score = score*0.998 + (asks[k].a / float64(dest))
+		fmt.Println(route)
+		b := compute_path_length(asks[k].s, asks[k].t, route)
+		score = score*0.998 + (asks[k].a)/float64(b)
 	}
 	score = math.Round(score * 2312311.0)
 	log.Printf("%f\n", score)
 }
 
-func restore(start, goal Point, route string) (dest int) {
+func compute_path_length(start, goal Point, route string) (dest int) {
 	now := start
 	for i := 0; i < len(route); i++ {
 		var next Point
