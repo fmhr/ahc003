@@ -3,11 +3,14 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
+	"math"
 	"os"
 	"runtime"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 )
 
 func maxInt(a, b int) int {
@@ -70,7 +73,8 @@ func main() {
 	}
 
 	// ... rest of the program ...
-	localTester()
+	// localTester()
+	solver()
 
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
@@ -86,13 +90,13 @@ func main() {
 }
 
 type Point struct {
-	y, x int
+	i, j int
 }
 
 type Ask struct {
 	s Point
 	t Point
-	a int
+	a float64
 	e float64
 }
 
@@ -120,17 +124,23 @@ func localTester() {
 	}
 	asks := make([]Ask, 1000)
 	for i := 0; i < 1000; i++ {
-		asks[i].s.y = nextInt()
-		asks[i].s.x = nextInt()
-		asks[i].t.y = nextInt()
-		asks[i].t.x = nextInt()
-		asks[i].a = nextInt()
+		asks[i].s.i = nextInt()
+		asks[i].s.j = nextInt()
+		asks[i].t.i = nextInt()
+		asks[i].t.j = nextInt()
+		asks[i].a = nextFloat64()
 		asks[i].e = nextFloat64()
 	}
+	var score float64
 	for i := 0; i < 1000; i++ {
-		route := ask(asks[i].s.y, asks[i].s.x, asks[i].t.y, asks[i].t.x)
+		route := ask(asks[i].s.i, asks[i].s.j, asks[i].t.i, asks[i].t.j)
+		fmt.Println(route)
+		log.Println(route)
 		dest := restore(asks[i].s, asks[i].t, route)
+		score += math.Pow(0.998, float64(1000-i)) * asks[i].a / float64(dest)
 	}
+	score = math.Round(2312311 * score)
+	log.Println(score)
 }
 
 func restore(start, goal Point, route string) (dest int) {
@@ -138,5 +148,28 @@ func restore(start, goal Point, route string) (dest int) {
 }
 
 func ask(si, sj, ti, tj int) (route string) {
+	log.Println(si, sj, ti, tj)
+	if si-ti < 0 {
+		route += strings.Repeat("D", ti-si)
+	} else {
+		route += strings.Repeat("U", si-ti)
+	}
+	if sj-tj < 0 {
+		route += strings.Repeat("R", tj-sj)
+	} else {
+		route += strings.Repeat("L", sj-tj)
+	}
 	return route
+}
+
+func solver() {
+	for i := 0; i < 1000; i++ {
+		si := nextInt()
+		sj := nextInt()
+		ti := nextInt()
+		tj := nextInt()
+		route := ask(si, sj, ti, tj)
+		fmt.Println(route)
+		_ = nextInt()
+	}
 }
