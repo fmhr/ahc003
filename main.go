@@ -119,21 +119,13 @@ var v [30][30]int
 func localTester() {
 	// input testcase
 	for i := 0; i < 30; i++ {
-		for j := 0; j < 30; j++ {
-			if i == j {
-				h[i][j] = 0
-			} else {
-				h[i][j] = nextInt()
-			}
+		for j := 0; j < 29; j++ {
+			h[i][j] = nextInt()
 		}
 	}
-	for i := 0; i < 30; i++ {
+	for i := 0; i < 29; i++ {
 		for j := 0; j < 30; j++ {
-			if i == j {
-				v[i][j] = 0
-			} else {
-				v[i][j] = nextInt()
-			}
+			v[i][j] = nextInt()
 		}
 	}
 	asks := make([]Ask, 1000)
