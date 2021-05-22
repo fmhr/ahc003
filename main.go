@@ -77,7 +77,6 @@ func main() {
 	// ... rest of the program ...
 
 	if *local {
-		log.Println("localだよ")
 		localTester()
 	} else {
 		log.Println("not local")
