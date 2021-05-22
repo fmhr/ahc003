@@ -58,7 +58,7 @@ func init() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
-var local = flag.String("local", "", "on local")
+var local = flag.Bool("local", true, "if local")
 
 func main() {
 	flag.Parse()
@@ -75,9 +75,8 @@ func main() {
 	}
 
 	// ... rest of the program ...
-	// localTester()
 
-	if *local != "" {
+	if *local {
 		log.Println("localだよ")
 		localTester()
 	} else {
@@ -147,12 +146,12 @@ func localTester() {
 	}
 	var score float64
 	for k := 0; k < 1000; k++ {
-		route := ask(asks[k].s.i, asks[k].s.j, asks[k].t.i, asks[k].t.j)
-		fmt.Println(route)
-		b := compute_path_length(asks[k].s, asks[k].t, route)
+		path := query(asks[k].s.i, asks[k].s.j, asks[k].t.i, asks[k].t.j)
+		fmt.Println(path)
+		b := compute_path_length(asks[k].s, asks[k].t, path)
 		score = score*0.998 + (asks[k].a)/float64(b)
 	}
-	score = math.Round(score * 2312311.0)
+	score = math.Round(2312311.0 * score)
 	log.Printf("%f\n", score)
 }
 
@@ -178,7 +177,7 @@ func compute_path_length(start, goal Point, route string) (dest int) {
 	return
 }
 
-func ask(si, sj, ti, tj int) (route string) {
+func query(si, sj, ti, tj int) (route string) {
 	if si-ti < 0 {
 		route += strings.Repeat("D", ti-si)
 	} else {
@@ -198,7 +197,7 @@ func solver() {
 		sj := nextInt()
 		ti := nextInt()
 		tj := nextInt()
-		route := ask(si, sj, ti, tj)
+		route := query(si, sj, ti, tj)
 		fmt.Println(route)
 		_ = nextInt()
 	}
