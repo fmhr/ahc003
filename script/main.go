@@ -38,11 +38,14 @@ func testRun() {
 	// vscore := vis(inputpaths[50], out)
 }
 
+// 	./tools/target/release/tester tools/in/0000.txt ./solver > out.txt
 func run(seed int) (int, int) {
-	exe := P + "/solver"
+	tester := P + "/tools/target/release/tester"
+	solver := P + "/solver"
 	inFile := fmt.Sprintf("%s/tools/in/%s.txt", P, fmt.Sprintf("%04d", seed))
 	outFile := fmt.Sprintf("%s/out/%s.out", P, fmt.Sprintf("%04d", seed))
-	cmdStr := exe + " < " + inFile + " > " + outFile
+	cmdStr := tester + " " + inFile + " " + solver + " > " + outFile
+	//cmdStr := exe + " < " + inFile + " > " + outFile
 	cmds := []string{"sh", "-c", cmdStr}
 	cmd := exec.Command(cmds[0], cmds[1:]...)
 	var stderr bytes.Buffer
@@ -57,8 +60,8 @@ func run(seed int) (int, int) {
 	if score == 0 {
 		log.Println(stderr.String())
 	}
-	loop := parseLoop(stderr.String())
-	return score, loop
+	//loop := parseLoop(stderr.String())
+	return score, 0
 }
 
 type Date struct {
@@ -69,7 +72,7 @@ type Date struct {
 
 func parallelRun() {
 	CORE := 4
-	maxSeed := 10
+	maxSeed := 100
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, CORE-1)
@@ -84,7 +87,7 @@ func parallelRun() {
 			mu.Lock()
 			datas = append(datas, d)
 			// fmt.Print(".")
-			log.Printf("seed=%d score=%d loop=%d\n", d.seed, d.score, d.loop)
+			fmt.Printf("seed=%d score=%d loop=%d\n", d.seed, d.score, d.loop)
 			mu.Unlock()
 			wg.Done()
 			<-sem
@@ -93,10 +96,10 @@ func parallelRun() {
 }
 
 func parseScore(s string) int {
-	ms := `score=([0-9]+)`
+	ms := `Score = ([0-9]+)`
 	re := regexp.MustCompile(ms)
 	ma := re.FindString(s)
-	score, err := strconv.Atoi(strings.Replace(ma, "score=", "", -1))
+	score, err := strconv.Atoi(strings.Replace(ma, "Score = ", "", -1))
 	if err != nil {
 		log.Println(score)
 	}

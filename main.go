@@ -58,7 +58,7 @@ func init() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
-var local = flag.Bool("local", true, "if local")
+var local = flag.Bool("local", false, "if local")
 
 func main() {
 	flag.Parse()
@@ -80,6 +80,7 @@ func main() {
 		log.Println("localだよ")
 		localTester()
 	} else {
+		log.Println("not local")
 		solver()
 	}
 
@@ -177,6 +178,7 @@ func compute_path_length(start, goal Point, route string) (dest int) {
 	return
 }
 
+// 直線的に動く暫定
 func query(si, sj, ti, tj int) (route string) {
 	if si-ti < 0 {
 		route += strings.Repeat("D", ti-si)
