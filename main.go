@@ -148,13 +148,10 @@ func localTester() {
 	var score float64
 	for k := 0; k < 1000; k++ {
 		route := ask(asks[k].s.i, asks[k].s.j, asks[k].t.i, asks[k].t.j)
-		//	fmt.Println(route)
 		dest := restore(asks[k].s, asks[k].t, route)
-		tmp := math.Pow(0.998, float64(1000-(k+1))) * (asks[k].a / float64(dest))
-		log.Println(tmp)
-		score += tmp
+		score = score*0.998 + (asks[k].a / float64(dest))
 	}
-	score = math.Round(2312311 * score)
+	score = math.Round(score * 2312311.0)
 	log.Printf("%f\n", score)
 }
 
@@ -166,18 +163,17 @@ func restore(start, goal Point, route string) (dest int) {
 		next.i = now.i + di[d]
 		next.j = now.j + dj[d]
 		switch d {
-		case 0:
-			dest += h[now.i][now.j]
-		case 1:
+		case 0: // D
 			dest += v[now.i][now.j]
-		case 2:
-			dest += h[next.i][next.j]
-		case 3:
+		case 1: // R
+			dest += h[now.i][now.j]
+		case 2: // U
 			dest += v[next.i][next.j]
+		case 3: // L
+			dest += h[next.i][next.j]
 		}
 		now = next
 	}
-	log.Println(now, goal)
 	return
 }
 
