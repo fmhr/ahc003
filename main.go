@@ -58,6 +58,8 @@ func init() {
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to `file`")
 var memprofile = flag.String("memprofile", "", "write memory profile to `file`")
 
+var local = flag.String("local", "default", "on local")
+
 func main() {
 	flag.Parse()
 	if *cpuprofile != "" {
@@ -74,7 +76,13 @@ func main() {
 
 	// ... rest of the program ...
 	// localTester()
-	solver()
+
+	if *local != "" {
+		fmt.Println("localだよ")
+		localTester()
+	} else {
+		solver()
+	}
 
 	if *memprofile != "" {
 		f, err := os.Create(*memprofile)
@@ -100,10 +108,16 @@ type Ask struct {
 	e float64
 }
 
+var direction = []string{"D", "R", "U", "L"}
+var reverse = map[byte]int{'D': 0, 'R': 1, 'U': 2, 'L': 3}
+var di = [4]int{1, 0, -1, 0}
+var dj = [4]int{0, 1, 0, -1}
+
+var h [30][30]int
+var v [30][30]int
+
 func localTester() {
 	// input testcase
-	var h [30][30]int
-	var v [30][30]int
 	for i := 0; i < 30; i++ {
 		for j := 0; j < 30; j++ {
 			if i == j {
@@ -132,23 +146,42 @@ func localTester() {
 		asks[i].e = nextFloat64()
 	}
 	var score float64
-	for i := 0; i < 1000; i++ {
-		route := ask(asks[i].s.i, asks[i].s.j, asks[i].t.i, asks[i].t.j)
-		fmt.Println(route)
-		log.Println(route)
-		dest := restore(asks[i].s, asks[i].t, route)
-		score += math.Pow(0.998, float64(1000-i)) * asks[i].a / float64(dest)
+	for k := 0; k < 1000; k++ {
+		route := ask(asks[k].s.i, asks[k].s.j, asks[k].t.i, asks[k].t.j)
+		//	fmt.Println(route)
+		dest := restore(asks[k].s, asks[k].t, route)
+		tmp := math.Pow(0.998, float64(1000-(k+1))) * (asks[k].a / float64(dest))
+		log.Println(tmp)
+		score += tmp
 	}
 	score = math.Round(2312311 * score)
-	log.Println(score)
+	log.Printf("%f\n", score)
 }
 
 func restore(start, goal Point, route string) (dest int) {
+	now := start
+	for i := 0; i < len(route); i++ {
+		var next Point
+		d := reverse[route[i]]
+		next.i = now.i + di[d]
+		next.j = now.j + dj[d]
+		switch d {
+		case 0:
+			dest += h[now.i][now.j]
+		case 1:
+			dest += v[now.i][now.j]
+		case 2:
+			dest += h[next.i][next.j]
+		case 3:
+			dest += v[next.i][next.j]
+		}
+		now = next
+	}
+	log.Println(now, goal)
 	return
 }
 
 func ask(si, sj, ti, tj int) (route string) {
-	log.Println(si, sj, ti, tj)
 	if si-ti < 0 {
 		route += strings.Repeat("D", ti-si)
 	} else {
