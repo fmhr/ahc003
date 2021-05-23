@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -100,6 +101,11 @@ type Point struct {
 	i, j int
 }
 
+func (p *Point) move(m byte) {
+	p.i = p.i + di[reverse[m]]
+	p.j = p.j + dj[reverse[m]]
+}
+
 type Ask struct {
 	s Point
 	t Point
@@ -184,14 +190,43 @@ func query(si, sj, ti, tj int) (route string) {
 	return route
 }
 
+func randomSolver(si, sj, ti, tj int) []byte {
+	var now Point
+	now.i = si
+	now.j = sj
+	rb := make([]byte, absInt(si-ti)+absInt(sj-tj))
+	cnt := 0
+	for !(now.i == ti && now.j == tj) {
+		r := ""
+		if now.i < ti {
+			r += "D"
+		} else if now.i > ti {
+			r += "U"
+		}
+		if now.j < tj {
+			r += "R"
+		} else if now.j > tj {
+			r += "L"
+		}
+		if len(r) == 0 {
+			panic("Errorrrrr")
+		}
+		rb[cnt] = r[rand.Intn(len(r))]
+		now.move(rb[cnt])
+		cnt++
+	}
+	return rb
+}
+
 func solver() {
 	for i := 0; i < 1000; i++ {
 		si := nextInt()
 		sj := nextInt()
 		ti := nextInt()
 		tj := nextInt()
-		route := query(si, sj, ti, tj)
-		fmt.Println(route)
+		// route := query(si, sj, ti, tj)
+		routebyte := randomSolver(si, sj, ti, tj)
+		fmt.Println(string(routebyte))
 		_ = nextInt()
 	}
 }
