@@ -25,8 +25,8 @@ func testn(n int) {
 	sumScore := 0
 	for i := 0; i < n; i++ {
 		fmt.Print("case=", i)
-		score, loop := run(i)
-		fmt.Printf(" score=%d loop=%d\n", score, loop)
+		score, _ := run(i)
+		fmt.Printf(" score=%d \n", score)
 		sumScore += score
 	}
 	fmt.Println("ALL SCORE = ", sumScore)
@@ -77,6 +77,7 @@ func parallelRun() {
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, CORE-1)
 	datas := make([]Date, 0)
+	sumScore := 0
 	for seed := 0; seed < maxSeed; seed++ {
 		wg.Add(1)
 		sem <- struct{}{}
@@ -87,12 +88,14 @@ func parallelRun() {
 			mu.Lock()
 			datas = append(datas, d)
 			// fmt.Print(".")
-			fmt.Printf("seed=%d score=%d loop=%d\n", d.seed, d.score, d.loop)
+			fmt.Printf("seed=%d score=%d\n", d.seed, d.score)
+			sumScore += d.score
 			mu.Unlock()
 			wg.Done()
 			<-sem
 		}(seed)
 	}
+	fmt.Printf("SCORE=%d\n", sumScore)
 }
 
 func parseScore(s string) int {
@@ -102,6 +105,7 @@ func parseScore(s string) int {
 	score, err := strconv.Atoi(strings.Replace(ma, "Score = ", "", -1))
 	if err != nil {
 		log.Println(score)
+		log.Println(ma)
 	}
 	return score
 }

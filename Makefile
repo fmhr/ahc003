@@ -14,6 +14,10 @@ localrun:
 	go build
 	./solver -local < tools/in/0000.txt > out.txt
 
+scriptrun:
+	cd script && go build
+	./script/script
+
 # example:
 # 	./src/solver < tools/example.in > example.out
 # 
