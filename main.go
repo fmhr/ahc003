@@ -113,7 +113,7 @@ type Ask struct {
 	e float64
 }
 
-var direction = []string{"D", "R", "U", "L"}
+//var direction = []string{"D", "R", "U", "L"}
 var reverse = map[byte]int{'D': 0, 'R': 1, 'U': 2, 'L': 3}
 var di = [4]int{1, 0, -1, 0}
 var dj = [4]int{0, 1, 0, -1}
@@ -190,7 +190,11 @@ func query(si, sj, ti, tj int) (route string) {
 	return route
 }
 
-func randomSolver(si, sj, ti, tj int) []byte {
+func randomSolver(q *QueryRecord, pr *PathRecord) []byte {
+	si := q.start.i
+	sj := q.start.j
+	ti := q.stop.i
+	tj := q.stop.j
 	var now Point
 	now.i = si
 	now.j = sj
@@ -218,15 +222,39 @@ func randomSolver(si, sj, ti, tj int) []byte {
 	return rb
 }
 
+type QueryRecord struct {
+	start  Point
+	stop   Point
+	move   []byte
+	result int
+}
+
+type Path struct {
+	numOfAppeared int
+	numOfSelected int
+	SampleAverage int
+}
+
+type PathRecord struct {
+	h [30][29]Path // y,i方向
+	v [29][30]Path // x,j方向
+}
+
+func (pr *PathRecord) Add(now Point, move byte) {
+
+}
+
 func solver() {
+	var pr PathRecord
 	for i := 0; i < 1000; i++ {
-		si := nextInt()
-		sj := nextInt()
-		ti := nextInt()
-		tj := nextInt()
+		var q QueryRecord
+		q.start.i = nextInt()
+		q.start.j = nextInt()
+		q.stop.i = nextInt()
+		q.stop.j = nextInt()
 		// route := query(si, sj, ti, tj)
-		routebyte := randomSolver(si, sj, ti, tj)
-		fmt.Println(string(routebyte))
-		_ = nextInt()
+		q.move = randomSolver(&q, &pr)
+		fmt.Println(string(q.move))
+		q.result = nextInt()
 	}
 }
