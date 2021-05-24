@@ -273,7 +273,7 @@ func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
 			rb[cnt] = r[ps[0].index]
 		}
 		//rb[cnt] = r[rand.Intn(len(r))]
-		pr.AddAppeared(now, rb[cnt])
+		pr.AddSelected(now, rb[cnt])
 		now.move(rb[cnt])
 		cnt++
 	}
@@ -340,11 +340,19 @@ func (pr *PathRecord) AddSelected(now Point, move byte) {
 func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
-		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
-		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
+		if pr.h[i][j].numOfSelected == 1 {
+			pr.h[i][j].SampleAverage = dis
+		} else {
+			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
+			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
+		}
 	} else if move == 'R' || move == 'L' {
-		pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage*(pr.v[i][j].numOfSelected-1) + dis
-		pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage / pr.v[i][j].numOfSelected
+		if pr.v[i][j].numOfSelected == 1 {
+			pr.v[i][j].SampleAverage = dis
+		} else {
+			pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage*(pr.v[i][j].numOfSelected-1) + dis
+			pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage / pr.v[i][j].numOfSelected
+		}
 	}
 }
 
@@ -353,6 +361,7 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 	average := q.result / len(q.move)
 	for i := 0; i < len(q.move); i++ {
 		pr.AddAverage(now, q.move[i], average)
+		now.move(q.move[i])
 	}
 }
 
@@ -369,5 +378,6 @@ func solver() {
 		q.move = greedySolver(&q, &pr)
 		fmt.Println(string(q.move))
 		q.result = nextInt()
+		pr.ReflectResult(q)
 	}
 }
