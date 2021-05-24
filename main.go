@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -76,7 +77,6 @@ func main() {
 	}
 
 	// ... rest of the program ...
-
 	if *local {
 		localTester()
 	} else {
@@ -225,6 +225,61 @@ func randomSolver(q *QueryRecord, pr *PathRecord) []byte {
 	return rb
 }
 
+func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
+	si := q.start.i
+	sj := q.start.j
+	ti := q.stop.i
+	tj := q.stop.j
+	var now Point
+	now.i = si
+	now.j = sj
+	rb := make([]byte, absInt(si-ti)+absInt(sj-tj))
+	cnt := 0
+	for !(now.i == ti && now.j == tj) {
+		r := ""
+		if now.i < ti {
+			r += "D"
+		} else if now.i > ti {
+			r += "U"
+		}
+		if now.j < tj {
+			r += "R"
+		} else if now.j > tj {
+			r += "L"
+		}
+		if len(r) == 0 {
+			panic("Errorrrrr")
+		}
+		for i := 0; i < len(r); i++ {
+			pr.AddAppeared(now, r[i])
+		}
+		//
+		ps := make([]Path, len(r))
+		nouse := -1
+		for i := 0; i < len(r); i++ {
+			y, x := getIj(now, r[i])
+			ps[i] = pr.getPath(y, x, r[i])
+			ps[i].index = i
+			if ps[i].numOfSelected == 0 {
+				nouse = i
+			}
+		}
+		if nouse != -1 {
+			rb[cnt] = r[nouse]
+		} else {
+			sort.Slice(ps, func(i, j int) bool {
+				return ps[i].SampleAverage < ps[j].SampleAverage
+			})
+			rb[cnt] = r[ps[0].index]
+		}
+		//rb[cnt] = r[rand.Intn(len(r))]
+		pr.AddAppeared(now, rb[cnt])
+		now.move(rb[cnt])
+		cnt++
+	}
+	return rb
+}
+
 type QueryRecord struct {
 	start  Point
 	stop   Point
@@ -236,14 +291,23 @@ type Path struct {
 	numOfAppeared int
 	numOfSelected int
 	SampleAverage int
+	index         int
 }
 
 type PathRecord struct {
-	h [30][29]Path // y,i方向
-	v [29][30]Path // x,j方向
+	h [30][30]Path // y,i方向
+	v [30][30]Path // x,j方向
 }
 
-func getPath(now Point, move byte) (int, int) {
+func (pr PathRecord) getPath(i, j int, move byte) Path {
+	if move == 'D' || move == 'U' {
+		return pr.h[i][j]
+	} else {
+		return pr.v[i][j]
+	}
+}
+
+func getIj(now Point, move byte) (int, int) {
 	var i, j int
 	if move == 'D' || move == 'R' {
 		i = now.i
@@ -256,7 +320,7 @@ func getPath(now Point, move byte) (int, int) {
 }
 
 func (pr *PathRecord) AddAppeared(now Point, move byte) {
-	i, j := getPath(now, move)
+	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
 		pr.h[i][j].numOfAppeared++
 	} else if move == 'R' || move == 'L' {
@@ -265,7 +329,7 @@ func (pr *PathRecord) AddAppeared(now Point, move byte) {
 }
 
 func (pr *PathRecord) AddSelected(now Point, move byte) {
-	i, j := getPath(now, move)
+	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
 		pr.h[i][j].numOfSelected++
 	} else if move == 'R' || move == 'L' {
@@ -274,7 +338,7 @@ func (pr *PathRecord) AddSelected(now Point, move byte) {
 }
 
 func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
-	i, j := getPath(now, move)
+	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
 		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
 		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
@@ -301,7 +365,8 @@ func solver() {
 		q.stop.i = nextInt()
 		q.stop.j = nextInt()
 		// route := query(si, sj, ti, tj)
-		q.move = randomSolver(&q, &pr)
+		//q.move = randomSolver(&q, &pr)
+		q.move = greedySolver(&q, &pr)
 		fmt.Println(string(q.move))
 		q.result = nextInt()
 	}

@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -67,7 +68,7 @@ func run(seed int) (int, int) {
 type Date struct {
 	seed  int
 	score int
-	loop  int
+	time  int
 }
 
 func parallelRun() {
@@ -82,13 +83,15 @@ func parallelRun() {
 		wg.Add(1)
 		sem <- struct{}{}
 		go func(seed int) {
+			startTime := time.Now()
 			var d Date
-			d.score, d.loop = run(seed)
+			d.score, d.time = run(seed)
+			elapsed := time.Since(startTime)
 			d.seed = seed
 			mu.Lock()
 			datas = append(datas, d)
 			// fmt.Print(".")
-			fmt.Printf("seed=%d score=%d\n", d.seed, d.score)
+			fmt.Printf("seed=%d score=%d time=%vms\n", d.seed, d.score, elapsed)
 			sumScore += d.score
 			mu.Unlock()
 			wg.Done()
@@ -110,8 +113,8 @@ func parseScore(s string) int {
 	return score
 }
 
-func parseLoop(s string) int {
-	ms := `loop=([0-9]+)`
+func parseTime(s string) int {
+	ms := `time=([0-9]+)`
 	re := regexp.MustCompile(ms)
 	ma := re.FindString(s)
 	n, err := strconv.Atoi(strings.Replace(ma, "loop=", "", -1))
