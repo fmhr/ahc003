@@ -91,7 +91,7 @@ func parallelRun() {
 			mu.Lock()
 			datas = append(datas, d)
 			// fmt.Print(".")
-			fmt.Printf("seed=%d score=%d time=%vms\n", d.seed, d.score, elapsed)
+			fmt.Printf("seed=%d score=%d time=%v\n", d.seed, d.score, elapsed)
 			sumScore += d.score
 			mu.Unlock()
 			wg.Done()
