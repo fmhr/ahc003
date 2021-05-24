@@ -102,8 +102,8 @@ type Point struct {
 }
 
 func (p *Point) move(m byte) {
-	p.i = p.i + di[reverse[m]]
-	p.j = p.j + dj[reverse[m]]
+	p.i = p.i + di[direction[m]]
+	p.j = p.j + dj[direction[m]]
 }
 
 type Ask struct {
@@ -113,8 +113,7 @@ type Ask struct {
 	e float64
 }
 
-//var direction = []string{"D", "R", "U", "L"}
-var reverse = map[byte]int{'D': 0, 'R': 1, 'U': 2, 'L': 3}
+var direction = map[byte]int{'D': 0, 'R': 1, 'U': 2, 'L': 3}
 var di = [4]int{1, 0, -1, 0}
 var dj = [4]int{0, 1, 0, -1}
 
@@ -157,7 +156,7 @@ func compute_path_length(start, goal Point, route string) (dest int) {
 	now := start
 	for i := 0; i < len(route); i++ {
 		var next Point
-		d := reverse[route[i]]
+		d := direction[route[i]]
 		next.i = now.i + di[d]
 		next.j = now.j + dj[d]
 		switch d {
@@ -215,7 +214,11 @@ func randomSolver(q *QueryRecord, pr *PathRecord) []byte {
 		if len(r) == 0 {
 			panic("Errorrrrr")
 		}
+		for i := 0; i < len(r); i++ {
+			pr.AddAppeared(now, r[i])
+		}
 		rb[cnt] = r[rand.Intn(len(r))]
+		pr.AddAppeared(now, rb[cnt])
 		now.move(rb[cnt])
 		cnt++
 	}
@@ -240,8 +243,53 @@ type PathRecord struct {
 	v [29][30]Path // x,j方向
 }
 
-func (pr *PathRecord) Add(now Point, move byte) {
+func getPath(now Point, move byte) (int, int) {
+	var i, j int
+	if move == 'D' || move == 'R' {
+		i = now.i
+		j = now.j
+	} else if move == 'U' || move == 'L' {
+		i = now.i + di[direction[move]]
+		j = now.j + dj[direction[move]]
+	}
+	return i, j
+}
 
+func (pr *PathRecord) AddAppeared(now Point, move byte) {
+	i, j := getPath(now, move)
+	if move == 'D' || move == 'U' {
+		pr.h[i][j].numOfAppeared++
+	} else if move == 'R' || move == 'L' {
+		pr.v[i][j].numOfAppeared++
+	}
+}
+
+func (pr *PathRecord) AddSelected(now Point, move byte) {
+	i, j := getPath(now, move)
+	if move == 'D' || move == 'U' {
+		pr.h[i][j].numOfSelected++
+	} else if move == 'R' || move == 'L' {
+		pr.v[i][j].numOfSelected++
+	}
+}
+
+func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
+	i, j := getPath(now, move)
+	if move == 'D' || move == 'U' {
+		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
+		pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
+	} else if move == 'R' || move == 'L' {
+		pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage*(pr.v[i][j].numOfSelected-1) + dis
+		pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage / pr.v[i][j].numOfSelected
+	}
+}
+
+func (pr *PathRecord) ReflectResult(q QueryRecord) {
+	now := q.start
+	average := q.result / len(q.move)
+	for i := 0; i < len(q.move); i++ {
+		pr.AddAverage(now, q.move[i], average)
+	}
 }
 
 func solver() {
