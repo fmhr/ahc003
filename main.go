@@ -288,6 +288,75 @@ func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
 	return rb
 }
 
+// worchal floyd ----------------------------------------------
+const inf int = 2 << 29
+
+type Graph struct {
+	cost [900][900]int
+	size int
+}
+
+var next [900][900]int
+var g Graph
+
+func toindex(i, j int) int {
+	return i*30 + j
+}
+func fromindex(k int) (int, int) {
+	return k / 30, k % 30
+}
+func buildGraph(pr PathRecord) {
+	for i := 0; i < 900; i++ {
+		for j := 0; j < 900; j++ {
+			g.cost[i][j] = inf
+		}
+	}
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 29; j++ {
+			a := toindex(i, j)
+			b := toindex(i, j+1)
+			g.cost[a][b] = pr.h[i][j].SampleAverage
+			g.cost[b][a] = pr.h[i][j].SampleAverage
+		}
+	}
+	for i := 0; i < 29; i++ {
+		for j := 0; j < 30; j++ {
+			a := toindex(i, j)
+			b := toindex(i+1, j)
+			g.cost[a][b] = pr.h[i][j].SampleAverage
+			g.cost[b][a] = pr.h[i][j].SampleAverage
+		}
+	}
+}
+
+func warchalFloyd() {
+	for i := 0; i < 900; i++ {
+		for j := 0; j < 900; j++ {
+			next[i][j] = j
+		}
+	}
+	for k := 0; k < 900; k++ {
+		for i := 0; i < 900; i++ {
+			for j := 0; j < 900; j++ {
+				if g.cost[i][j] > g.cost[i][k]+g.cost[k][j] {
+					g.cost[i][j] = g.cost[i][k] + g.cost[k][j]
+					next[i][j] = next[i][k]
+				}
+			}
+		}
+	}
+}
+
+func routeRestor(start, stop int) []int {
+	route := make([]int, 0)
+	for cur := start; cur != stop; cur = next[cur][stop] {
+		route = append(route, cur)
+	}
+	route = append(route, stop)
+	return route
+}
+
+/// ------------------------------------------------------
 type QueryRecord struct {
 	start  Point
 	stop   Point
@@ -376,6 +445,7 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 
 func solver() {
 	var pr PathRecord
+	var last QueryRecord
 	for i := 0; i < 1000; i++ {
 		var q QueryRecord
 		q.start.i = nextInt()
@@ -388,5 +458,15 @@ func solver() {
 		fmt.Println(string(q.move))
 		q.result = nextInt()
 		pr.ReflectResult(q)
+		if i == 999 {
+			last = q
+		}
 	}
+	log.Println(last)
+	buildGraph(pr)
+	warchalFloyd()
+	s := toindex(last.start.i, last.start.j)
+	t := toindex(last.stop.i, last.stop.j)
+	path := routeRestor(s, t)
+	log.Println(path)
 }
