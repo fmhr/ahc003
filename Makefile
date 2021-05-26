@@ -15,6 +15,7 @@ localrun:
 	./solver -local < tools/in/0000.txt > out.txt
 
 scriptrun:
+	go build
 	cd script && go build
 	./script/script
 

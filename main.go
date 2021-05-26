@@ -225,6 +225,14 @@ func randomSolver(q *QueryRecord, pr *PathRecord) []byte {
 	return rb
 }
 
+func sampleUCB(p Path) float64 {
+	v := 0.0
+	//log.Println(math.Sqrt(math.Log(float64(p.numOfAppeared)) / float64(2*p.numOfSelected)))
+	//v = float64(p.SampleAverage)
+	v = float64(p.SampleAverage) - math.Sqrt(math.Log(float64(p.numOfAppeared))/float64(2*p.numOfSelected))
+	return v
+}
+
 func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
 	si := q.start.i
 	sj := q.start.j
@@ -268,7 +276,7 @@ func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
 			rb[cnt] = r[nouse]
 		} else {
 			sort.Slice(ps, func(i, j int) bool {
-				return ps[i].SampleAverage < ps[j].SampleAverage
+				return sampleUCB(ps[i]) < sampleUCB(ps[j])
 			})
 			rb[cnt] = r[ps[0].index]
 		}
@@ -295,8 +303,9 @@ type Path struct {
 }
 
 type PathRecord struct {
-	h [30][30]Path // y,i方向
-	v [30][30]Path // x,j方向
+	h    [30][30]Path // y,i方向
+	v    [30][30]Path // x,j方向
+	time int
 }
 
 func (pr PathRecord) getPath(i, j int, move byte) Path {
