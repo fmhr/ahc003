@@ -356,6 +356,24 @@ func routeRestor(start, stop int) []int {
 	return route
 }
 
+func toMoves(route []int) (move string) {
+	log.Println(route)
+	for i := 0; i < len(route)-1; i++ {
+		switch route[i+1] - route[i] {
+		case 1:
+			move += "R"
+		case 30:
+			move += "D"
+		case -1:
+			move += "L"
+		case -30:
+			move += "U"
+		}
+	}
+	log.Println(move)
+	return
+}
+
 /// ------------------------------------------------------
 type QueryRecord struct {
 	start  Point
@@ -435,6 +453,7 @@ func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 }
 
 func (pr *PathRecord) ReflectResult(q QueryRecord) {
+	log.Println(q)
 	now := q.start
 	average := q.result / len(q.move)
 	for i := 0; i < len(q.move); i++ {
@@ -458,15 +477,33 @@ func solver() {
 		fmt.Println(string(q.move))
 		q.result = nextInt()
 		pr.ReflectResult(q)
-		if i == 999 {
-			last = q
-		}
 	}
+	// buildGraph(pr)
+	// warchalFloyd()
+	// for i := 1000; i < 1000; i++ {
+	// 	var q QueryRecord
+	// 	q.start.i = nextInt()
+	// 	q.start.j = nextInt()
+	// 	q.stop.i = nextInt()
+	// 	q.stop.j = nextInt()
+	// 	s := toindex(q.start.i, q.start.j)
+	// 	t := toindex(q.stop.i, q.stop.j)
+	// 	log.Println(s, t)
+	// 	log.Println(g.cost[s][t], g.cost[t][s])
+	// 	path := routeRestor(s, t)
+	// 	log.Println(path)
+	// 	fmt.Println(toMoves(path))
+	// 	q.move = []byte(toMoves(path))
+	// 	q.result = nextInt()
+	// 	//pr.ReflectResult(q)
+	//
+	// }
 	log.Println(last)
-	buildGraph(pr)
-	warchalFloyd()
-	s := toindex(last.start.i, last.start.j)
-	t := toindex(last.stop.i, last.stop.j)
-	path := routeRestor(s, t)
-	log.Println(path)
+	// buildGraph(pr)
+	// warchalFloyd()
+	// s := toindex(last.start.i, last.start.j)
+	// t := toindex(last.stop.i, last.stop.j)
+	// path := routeRestor(s, t)
+	// log.Println(path)
+	// log.Println(toMoves(path))
 }
