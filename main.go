@@ -80,7 +80,6 @@ func main() {
 	if *local {
 		localTester()
 	} else {
-		log.Println("not local")
 		solver()
 	}
 
@@ -233,7 +232,8 @@ func sampleUCB(p Path) float64 {
 	return v
 }
 
-func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
+func greedySolver(q *QueryRecord, pr *PathRecord) (int, []byte) {
+	cost := 0
 	si := q.start.i
 	sj := q.start.j
 	ti := q.stop.i
@@ -279,13 +279,14 @@ func greedySolver(q *QueryRecord, pr *PathRecord) []byte {
 				return sampleUCB(ps[i]) < sampleUCB(ps[j])
 			})
 			rb[cnt] = r[ps[0].index]
+			cost += ps[0].SampleAverage
 		}
 		//rb[cnt] = r[rand.Intn(len(r))]
 		pr.AddSelected(now, rb[cnt])
 		now.move(rb[cnt])
 		cnt++
 	}
-	return rb
+	return cost, rb
 }
 
 // worchal floyd ----------------------------------------------
@@ -308,23 +309,39 @@ func fromindex(k int) (int, int) {
 func buildGraph(pr PathRecord) {
 	for i := 0; i < 900; i++ {
 		for j := 0; j < 900; j++ {
+			if i == j {
+				g.cost[i][j] = 0
+			}
 			g.cost[i][j] = inf
 		}
 	}
+	// X軸方向
 	for i := 0; i < 30; i++ {
 		for j := 0; j < 29; j++ {
 			a := toindex(i, j)
 			b := toindex(i, j+1)
-			g.cost[a][b] = pr.h[i][j].SampleAverage
-			g.cost[b][a] = pr.h[i][j].SampleAverage
+			if pr.h[i][j].numOfSelected > 0 {
+				g.cost[a][b] = pr.h[i][j].SampleAverage
+				g.cost[b][a] = pr.h[i][j].SampleAverage
+			} else {
+				g.cost[a][b] = 100000000
+				g.cost[b][a] = 100000000
+			}
 		}
 	}
+	// Y軸方向
 	for i := 0; i < 29; i++ {
 		for j := 0; j < 30; j++ {
 			a := toindex(i, j)
 			b := toindex(i+1, j)
-			g.cost[a][b] = pr.h[i][j].SampleAverage
-			g.cost[b][a] = pr.h[i][j].SampleAverage
+			if pr.v[i][j].numOfSelected > 0 {
+				g.cost[a][b] = pr.v[i][j].SampleAverage
+				g.cost[b][a] = pr.v[i][j].SampleAverage
+			} else {
+				g.cost[a][b] = 100000000
+				g.cost[b][a] = 100000000
+
+			}
 		}
 	}
 }
@@ -357,7 +374,6 @@ func routeRestor(start, stop int) []int {
 }
 
 func toMoves(route []int) (move string) {
-	log.Println(route)
 	for i := 0; i < len(route)-1; i++ {
 		switch route[i+1] - route[i] {
 		case 1:
@@ -370,7 +386,6 @@ func toMoves(route []int) (move string) {
 			move += "U"
 		}
 	}
-	log.Println(move)
 	return
 }
 
@@ -454,7 +469,7 @@ func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 
 // greedy
 func (pr *PathRecord) ReflectResult(q QueryRecord) {
-	log.Println(q)
+	//log.Println(q)
 	now := q.start
 	average := q.result / len(q.move)
 	for i := 0; i < len(q.move); i++ {
@@ -466,6 +481,7 @@ func solver() {
 	n := 1000
 	var pr PathRecord
 	for i := 0; i < n; i++ {
+		var cost int
 		var q QueryRecord
 		q.start.i = nextInt()
 		q.start.j = nextInt()
@@ -473,11 +489,15 @@ func solver() {
 		q.stop.j = nextInt()
 		// route := query(si, sj, ti, tj)
 		//q.move = randomSolver(&q, &pr)
-		q.move = greedySolver(&q, &pr)
+		cost, q.move = greedySolver(&q, &pr)
 		fmt.Println(string(q.move))
 		q.result = nextInt()
 		pr.ReflectResult(q)
+		_ = cost
 	}
+	//q.move = []byte(toMoves(path))
+	//q.result = nextInt()
+	//
 	if n < 1000 {
 		buildGraph(pr)
 		warchalFloyd()
@@ -489,10 +509,7 @@ func solver() {
 			q.stop.j = nextInt()
 			s := toindex(q.start.i, q.start.j)
 			t := toindex(q.stop.i, q.stop.j)
-			log.Println(s, t)
-			log.Println(g.cost[s][t], g.cost[t][s])
 			path := routeRestor(s, t)
-			log.Println(path)
 			fmt.Println(toMoves(path))
 			q.move = []byte(toMoves(path))
 			q.result = nextInt()
