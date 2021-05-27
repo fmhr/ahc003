@@ -452,6 +452,7 @@ func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 	}
 }
 
+// greedy
 func (pr *PathRecord) ReflectResult(q QueryRecord) {
 	log.Println(q)
 	now := q.start
@@ -461,11 +462,10 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 		now.move(q.move[i])
 	}
 }
-
 func solver() {
+	n := 1000
 	var pr PathRecord
-	var last QueryRecord
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < n; i++ {
 		var q QueryRecord
 		q.start.i = nextInt()
 		q.start.j = nextInt()
@@ -478,27 +478,27 @@ func solver() {
 		q.result = nextInt()
 		pr.ReflectResult(q)
 	}
-	// buildGraph(pr)
-	// warchalFloyd()
-	// for i := 1000; i < 1000; i++ {
-	// 	var q QueryRecord
-	// 	q.start.i = nextInt()
-	// 	q.start.j = nextInt()
-	// 	q.stop.i = nextInt()
-	// 	q.stop.j = nextInt()
-	// 	s := toindex(q.start.i, q.start.j)
-	// 	t := toindex(q.stop.i, q.stop.j)
-	// 	log.Println(s, t)
-	// 	log.Println(g.cost[s][t], g.cost[t][s])
-	// 	path := routeRestor(s, t)
-	// 	log.Println(path)
-	// 	fmt.Println(toMoves(path))
-	// 	q.move = []byte(toMoves(path))
-	// 	q.result = nextInt()
-	// 	//pr.ReflectResult(q)
-	//
-	// }
-	log.Println(last)
+	if n < 1000 {
+		buildGraph(pr)
+		warchalFloyd()
+		for i := n; i < 1000; i++ {
+			var q QueryRecord
+			q.start.i = nextInt()
+			q.start.j = nextInt()
+			q.stop.i = nextInt()
+			q.stop.j = nextInt()
+			s := toindex(q.start.i, q.start.j)
+			t := toindex(q.stop.i, q.stop.j)
+			log.Println(s, t)
+			log.Println(g.cost[s][t], g.cost[t][s])
+			path := routeRestor(s, t)
+			log.Println(path)
+			fmt.Println(toMoves(path))
+			q.move = []byte(toMoves(path))
+			q.result = nextInt()
+			// pr.ReflectResult(q) wfの中では未実装
+		}
+	}
 	// buildGraph(pr)
 	// warchalFloyd()
 	// s := toindex(last.start.i, last.start.j)
