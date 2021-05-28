@@ -413,9 +413,9 @@ type PathRecord struct {
 
 func (pr PathRecord) getPath(i, j int, move byte) Path {
 	if move == 'D' || move == 'U' {
-		return pr.h[i][j]
-	} else {
 		return pr.v[i][j]
+	} else {
+		return pr.h[i][j]
 	}
 }
 
@@ -434,36 +434,36 @@ func getIj(now Point, move byte) (int, int) {
 func (pr *PathRecord) AddAppeared(now Point, move byte) {
 	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
-		pr.h[i][j].numOfAppeared++
-	} else if move == 'R' || move == 'L' {
 		pr.v[i][j].numOfAppeared++
+	} else if move == 'R' || move == 'L' {
+		pr.h[i][j].numOfAppeared++
 	}
 }
 
 func (pr *PathRecord) AddSelected(now Point, move byte) {
 	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
-		pr.h[i][j].numOfSelected++
-	} else if move == 'R' || move == 'L' {
 		pr.v[i][j].numOfSelected++
+	} else if move == 'R' || move == 'L' {
+		pr.h[i][j].numOfSelected++
 	}
 }
 
 func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 	i, j := getIj(now, move)
 	if move == 'D' || move == 'U' {
-		if pr.h[i][j].numOfSelected == 1 {
-			pr.h[i][j].SampleAverage = dis
-		} else {
-			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
-			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
-		}
-	} else if move == 'R' || move == 'L' {
 		if pr.v[i][j].numOfSelected == 1 {
 			pr.v[i][j].SampleAverage = dis
 		} else {
 			pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage*(pr.v[i][j].numOfSelected-1) + dis
 			pr.v[i][j].SampleAverage = pr.v[i][j].SampleAverage / pr.v[i][j].numOfSelected
+		}
+	} else if move == 'R' || move == 'L' {
+		if pr.h[i][j].numOfSelected == 1 {
+			pr.h[i][j].SampleAverage = dis
+		} else {
+			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage*(pr.h[i][j].numOfSelected-1) + dis
+			pr.h[i][j].SampleAverage = pr.h[i][j].SampleAverage / pr.h[i][j].numOfSelected
 		}
 	}
 }
@@ -480,7 +480,7 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 }
 
 func solver() {
-	n := 999
+	n := 500
 	var pr PathRecord
 	for i := 0; i < n; i++ {
 		var cost int
@@ -504,7 +504,7 @@ func solver() {
 		buildGraph(pr)
 		warchalFloyd()
 		for i := n; i < 1000; i++ {
-			var cost int
+			// var cost int
 			var q QueryRecord
 			q.start.i = nextInt()
 			q.start.j = nextInt()
@@ -512,16 +512,17 @@ func solver() {
 			q.stop.j = nextInt()
 			s := toindex(q.start.i, q.start.j)
 			t := toindex(q.stop.i, q.stop.j)
-			cost, q.move = greedySolver(&q, &pr)
-			log.Println("cost=", cost)
-			log.Println(string(q.move))
+			//
+			// cost, q.move = greedySolver(&q, &pr)
+			// log.Println("cost=", cost)
+			// log.Println(string(q.move))
 			path := routeRestor(s, t)
-			log.Println(path)
-			log.Println("length=", g.cost[s][t])
+			//log.Println(path)
+			//log.Println("length=", g.cost[s][t])
 			fmt.Println(toMoves(path))
 			q.move = []byte(toMoves(path))
 			q.result = nextInt()
-			log.Println("result=", q.result)
+			//log.Println("result=", q.result)
 			// pr.ReflectResult(q) wfの中では未実装
 		}
 	}
