@@ -274,6 +274,7 @@ func greedySolver(q *QueryRecord, pr *PathRecord) (int, []byte) {
 		}
 		if nouse != -1 {
 			rb[cnt] = r[nouse]
+			cost += 1
 		} else {
 			sort.Slice(ps, func(i, j int) bool {
 				return sampleUCB(ps[i]) < sampleUCB(ps[j])
@@ -467,7 +468,7 @@ func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 	}
 }
 
-// greedy
+// greedy用
 func (pr *PathRecord) ReflectResult(q QueryRecord) {
 	//log.Println(q)
 	now := q.start
@@ -477,8 +478,9 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 		now.move(q.move[i])
 	}
 }
+
 func solver() {
-	n := 1000
+	n := 999
 	var pr PathRecord
 	for i := 0; i < n; i++ {
 		var cost int
@@ -502,6 +504,7 @@ func solver() {
 		buildGraph(pr)
 		warchalFloyd()
 		for i := n; i < 1000; i++ {
+			var cost int
 			var q QueryRecord
 			q.start.i = nextInt()
 			q.start.j = nextInt()
@@ -509,10 +512,16 @@ func solver() {
 			q.stop.j = nextInt()
 			s := toindex(q.start.i, q.start.j)
 			t := toindex(q.stop.i, q.stop.j)
+			cost, q.move = greedySolver(&q, &pr)
+			log.Println("cost=", cost)
+			log.Println(string(q.move))
 			path := routeRestor(s, t)
+			log.Println(path)
+			log.Println("length=", g.cost[s][t])
 			fmt.Println(toMoves(path))
 			q.move = []byte(toMoves(path))
 			q.result = nextInt()
+			log.Println("result=", q.result)
 			// pr.ReflectResult(q) wfの中では未実装
 		}
 	}
