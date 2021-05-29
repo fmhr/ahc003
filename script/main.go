@@ -76,7 +76,7 @@ func parallelRun() {
 	maxSeed := 100
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, CORE-1)
+	sem := make(chan struct{}, CORE)
 	datas := make([]Date, 0)
 	sumScore := 0
 	for seed := 0; seed < maxSeed; seed++ {
