@@ -532,9 +532,6 @@ func solver() {
 		}
 	}
 	log.Printf("turn=%d\n", i)
-	for j := 0; j < 100; j++ {
-
-	}
 	if i < 1000 {
 		buildGraph(pr)
 		warchalFloyd()

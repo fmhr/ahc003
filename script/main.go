@@ -75,7 +75,7 @@ type Date struct {
 
 func parallelRun() {
 	CORE := 4
-	maxSeed := 100
+	maxSeed := 1000
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 	sem := make(chan struct{}, CORE)
