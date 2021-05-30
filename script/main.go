@@ -58,17 +58,19 @@ func run(seed int) (int, int) {
 	}
 	cmd.Wait()
 	score := parseScore(stderr.String())
+	turn := parseTurn(stderr.String())
 	if score == 0 {
 		log.Println(stderr.String())
 	}
 	//loop := parseLoop(stderr.String())
-	return score, 0
+	return score, turn
 }
 
 type Date struct {
 	seed  int
 	score int
 	time  int
+	turn  int
 }
 
 func parallelRun() {
@@ -85,13 +87,13 @@ func parallelRun() {
 		go func(seed int) {
 			startTime := time.Now()
 			var d Date
-			d.score, d.time = run(seed)
+			d.score, d.turn = run(seed)
 			elapsed := time.Since(startTime)
 			d.seed = seed
 			mu.Lock()
 			datas = append(datas, d)
 			// fmt.Print(".")
-			fmt.Printf("seed=%d score=%d time=%v\n", d.seed, d.score, elapsed)
+			fmt.Printf("seed=%d score=%d time=%v switch=%d\n", d.seed, d.score, elapsed, d.turn)
 			sumScore += d.score
 			mu.Unlock()
 			wg.Done()
@@ -118,6 +120,17 @@ func parseTime(s string) int {
 	re := regexp.MustCompile(ms)
 	ma := re.FindString(s)
 	n, err := strconv.Atoi(strings.Replace(ma, "loop=", "", -1))
+	if err != nil {
+		log.Println(n)
+	}
+	return n
+}
+
+func parseTurn(s string) int {
+	ms := `turn=([0-9]+)`
+	re := regexp.MustCompile(ms)
+	ma := re.FindString(s)
+	n, err := strconv.Atoi(strings.Replace(ma, "turn=", "", -1))
 	if err != nil {
 		log.Println(n)
 	}

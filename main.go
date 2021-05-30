@@ -411,6 +411,25 @@ type PathRecord struct {
 	time int
 }
 
+func (pr PathRecord) getCntSelected() int {
+	cnt := 0
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 30; j++ {
+			if pr.h[i][j].numOfSelected > 0 {
+				cnt++
+			}
+		}
+	}
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 30; j++ {
+			if pr.v[i][j].numOfSelected > 0 {
+				cnt++
+			}
+		}
+	}
+	return cnt
+}
+
 func (pr PathRecord) getPath(i, j int, move byte) Path {
 	if move == 'D' || move == 'U' {
 		return pr.v[i][j]
@@ -480,31 +499,33 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 }
 
 func solver() {
-	n := 500
 	var pr PathRecord
-	for i := 0; i < n; i++ {
+	var i int
+	for i = 0; i < 1000; i++ {
 		var cost int
 		var q QueryRecord
 		q.start.i = nextInt()
 		q.start.j = nextInt()
 		q.stop.i = nextInt()
 		q.stop.j = nextInt()
-		// route := query(si, sj, ti, tj)
-		//q.move = randomSolver(&q, &pr)
 		cost, q.move = greedySolver(&q, &pr)
 		fmt.Println(string(q.move))
 		q.result = nextInt()
 		pr.ReflectResult(q)
 		_ = cost
+		if i%10 == 0 {
+			cnt := float64(pr.getCntSelected())
+			if cnt/1750 > 0.96 {
+				i++
+				break
+			}
+		}
 	}
-	//q.move = []byte(toMoves(path))
-	//q.result = nextInt()
-	//
-	if n < 1000 {
+	log.Printf("turn=%d\n", i)
+	if i < 1000 {
 		buildGraph(pr)
 		warchalFloyd()
-		for i := n; i < 1000; i++ {
-			// var cost int
+		for ; i < 1000; i++ {
 			var q QueryRecord
 			q.start.i = nextInt()
 			q.start.j = nextInt()
@@ -512,25 +533,10 @@ func solver() {
 			q.stop.j = nextInt()
 			s := toindex(q.start.i, q.start.j)
 			t := toindex(q.stop.i, q.stop.j)
-			//
-			// cost, q.move = greedySolver(&q, &pr)
-			// log.Println("cost=", cost)
-			// log.Println(string(q.move))
 			path := routeRestor(s, t)
-			//log.Println(path)
-			//log.Println("length=", g.cost[s][t])
 			fmt.Println(toMoves(path))
 			q.move = []byte(toMoves(path))
 			q.result = nextInt()
-			//log.Println("result=", q.result)
-			// pr.ReflectResult(q) wfの中では未実装
 		}
 	}
-	// buildGraph(pr)
-	// warchalFloyd()
-	// s := toindex(last.start.i, last.start.j)
-	// t := toindex(last.stop.i, last.stop.j)
-	// path := routeRestor(s, t)
-	// log.Println(path)
-	// log.Println(toMoves(path))
 }
