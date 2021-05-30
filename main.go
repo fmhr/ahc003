@@ -523,7 +523,7 @@ func solver() {
 		q.result = nextInt()
 		pr.ReflectResult(q)
 		_ = cost
-		if i%10 == 0 {
+		if i%8 == 0 {
 			cnt := float64(pr.getCntSelected())
 			if cnt/1750 > 0.96 {
 				i++
@@ -532,6 +532,9 @@ func solver() {
 		}
 	}
 	log.Printf("turn=%d\n", i)
+	for j := 0; j < 100; j++ {
+
+	}
 	if i < 1000 {
 		buildGraph(pr)
 		warchalFloyd()
