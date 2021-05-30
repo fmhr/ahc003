@@ -225,11 +225,11 @@ func randomSolver(q *QueryRecord, pr *PathRecord) []byte {
 }
 
 func sampleUCB(p Path) float64 {
-	v := 0.0
+	//v := 0.0
 	//log.Println(math.Sqrt(math.Log(float64(p.numOfAppeared)) / float64(2*p.numOfSelected)))
 	//v = float64(p.SampleAverage)
-	v = float64(p.SampleAverage) - math.Sqrt(math.Log(float64(p.numOfAppeared))/float64(2*p.numOfSelected))
-	return v
+	//v = float64(p.SampleAverage) - math.Sqrt(math.Log(float64(p.numOfAppeared))/float64(2*p.numOfSelected))
+	return float64(p.SampleAverage)
 }
 
 func greedySolver(q *QueryRecord, pr *PathRecord) (int, []byte) {
@@ -341,7 +341,6 @@ func buildGraph(pr PathRecord) {
 			} else {
 				g.cost[a][b] = 100000000
 				g.cost[b][a] = 100000000
-
 			}
 		}
 	}
@@ -411,6 +410,11 @@ type PathRecord struct {
 	time int
 }
 
+type tmpPath struct {
+	i, j int
+	move byte
+}
+
 func (pr PathRecord) getCntSelected() int {
 	cnt := 0
 	for i := 0; i < 30; i++ {
@@ -435,6 +439,14 @@ func (pr PathRecord) getPath(i, j int, move byte) Path {
 		return pr.v[i][j]
 	} else {
 		return pr.h[i][j]
+	}
+}
+
+func (pr *PathRecord) setDistance(p tmpPath, d int) {
+	if p.move == 'D' || p.move == 'U' {
+		pr.v[p.i][p.j].SampleAverage = d
+	} else {
+		pr.h[p.i][p.j].SampleAverage = d
 	}
 }
 
@@ -487,9 +499,7 @@ func (pr *PathRecord) AddAverage(now Point, move byte, dis int) {
 	}
 }
 
-// greedy用
 func (pr *PathRecord) ReflectResult(q QueryRecord) {
-	//log.Println(q)
 	now := q.start
 	average := q.result / len(q.move)
 	for i := 0; i < len(q.move); i++ {
