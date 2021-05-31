@@ -1,3 +1,3 @@
-module ahc003/m
+module solver
 
 go 1.16
