@@ -19,6 +19,9 @@ func main() {
 	if _, err := os.Stat(P + "/tools"); os.IsNotExist(err) {
 		log.Fatal("tools not exists")
 	}
+	if _, err := os.Stat(P + "/out"); os.IsNotExist(err) {
+		os.Mkdir(P+"/out", os.ModePerm)
+	}
 	//testRun()
 	parallelRun()
 }
