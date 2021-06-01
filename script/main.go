@@ -29,7 +29,7 @@ var P string = ""
 func run(seed int) (int, int, error) {
 	tester := P + "/tools/target/release/tester"
 	solver := P + "/solver"
-	inFile := fmt.Sprintf("%s/tools/in/%s.txt", P, fmt.Sprintf("%04d", seed))
+	inFile := fmt.Sprintf("%s/in/%s.txt", P, fmt.Sprintf("%04d", seed))
 	if _, err := os.Stat(inFile); os.IsNotExist(err) {
 		return 0, 0, err
 	}
