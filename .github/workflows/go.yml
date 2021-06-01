@@ -56,5 +56,5 @@ jobs:
 
     - name: generate test case
       run: |
-        cargo run --manifest-path=tools/Cargo.toml --release --bin gen seeds.txt
+        cargo run --manifest-path=tools/Cargo.toml --release --bin gen tools/seeds.txt
 
