@@ -42,7 +42,7 @@ jobs:
       id: cache-tools
       with:
         path: tools/
-        key: ${{ runner.os}}-tools-
+        key: ${{ runner.os }}-tools-
 
     - name: Prepare tools/
       if: steps.cache-tools.outputs.cache-hit != 'true'
@@ -58,3 +58,5 @@ jobs:
       run: |
         cargo run --manifest-path=tools/Cargo.toml --release --bin gen tools/seeds.txt
 
+    - name: test 100 case
+      run: go run script/main.go
