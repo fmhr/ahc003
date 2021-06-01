@@ -19,6 +19,9 @@ scriptrun:
 	cd script && go build
 	./script/script
 
+toolsbuild:
+	cargo build --manifest-path=tools/Cargo.toml --release
+
 # example:
 # 	./src/solver < tools/example.in > example.out
 # 

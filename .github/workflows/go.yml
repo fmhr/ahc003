@@ -18,10 +18,10 @@ jobs:
       with:
         go-version: 1.15
 
-    - name: Build
+    - name: Build solver
       run: go build -v ./...
 
-    - name: Test
+    - name: Test solver
       run: go test -v ./...
 
     - name: Set up Rust
@@ -29,7 +29,8 @@ jobs:
       with:
         toolchain: nightly
 
-    - uses: actions/cache@v2
+    - name: setup cargo
+      uses: actions/cache@v2
       with:
         path: |
          ~/.cargo/registry
@@ -52,5 +53,4 @@ jobs:
     - name: Build the visualizer
       run: |
         cargo build --manifest-path=tools/Cargo.toml --release
-
 
