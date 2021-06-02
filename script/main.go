@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -48,7 +49,23 @@ func run(seed int) (int, int, error) {
 		log.Println(cmds)
 		log.Fatal(err)
 	}
-	cmd.Wait()
+	// TLE対策
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+	select {
+	case <-time.After(10 * time.Second):
+		if err := cmd.Process.Kill(); err != nil {
+			log.Println("failed to kill prosess:", err)
+		}
+		cmd.Wait()
+	case err := <-done:
+		if err != nil {
+			log.Fatalf("process finished with err = %v\n", err)
+		}
+	}
+	// cmd.Wait()
 	score := parseScore(stderr.String())
 	turn := parseTurn(stderr.String())
 	if score == 0 {
@@ -66,11 +83,11 @@ type Date struct {
 }
 
 func parallelRun() {
-	CORE := 4
+	cpus := runtime.NumCPU()
 	maxSeed := 100
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, CORE)
+	sem := make(chan struct{}, cpus)
 	datas := make([]Date, 0)
 	sumScore := 0
 	for seed := 0; seed < maxSeed; seed++ {
