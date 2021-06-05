@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"container/heap"
 	"flag"
 	"fmt"
 	"log"
@@ -508,6 +509,69 @@ func (pr *PathRecord) ReflectResult(q QueryRecord) {
 	}
 }
 
+// dijkstra go
+type Edge struct {
+	to, cost int
+}
+type Dijkstra struct {
+	edges [30][]Edge
+	prev  [30]int
+}
+
+func (g *Dijkstra) buildGridEdge() {
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 30; j++ {
+			for d := 0; d < 4; d++ {
+				ni := i + di[d]
+				nj := j + dj[d]
+				if ni >= 0 && ni < 30 && nj >= 0 && nj < 30 {
+					g.edges[i*30+j] = append(g.edges[i*30+j], Edge{to: ni*30 + nj, cost: 5000})
+				}
+			}
+		}
+	}
+	for i := 0; i < 30; i++ {
+		g.prev[i] = -1
+	}
+}
+
+// n:numNode s:source
+func (g *Dijkstra) do(s int) {
+	d := make([]int, 30)
+	for i := 0; i < 30; i++ {
+		d[i] = inf
+	}
+	d[s] = 0
+	pq := make(PriorityQueue, 0)
+	heap.Push(&pq, &Item{node: s, cost: 0})
+	for pq.Len() > 0 {
+		p := heap.Pop(&pq).(*Item)
+		v := p.node
+		if d[v] < p.cost {
+			continue
+		}
+		for _, e := range g.edges[v] {
+			if d[e.to] > d[v]+e.cost {
+				d[e.to] = d[v] + e.cost
+				heap.Push(&pq, &Item{cost: d[e.to], node: e.to})
+				g.prev[e.to] = v
+			}
+		}
+	}
+
+}
+func (g *Dijkstra) getPath(s, t int) (p []int) {
+	g.do(s)
+	for t != -1 {
+		p = append(p, g.prev[t])
+		t = g.prev[t]
+	}
+	for i := 0; i < len(p)/2; i++ {
+		p[i], p[len(p)-i-1] = p[len(p)-i-1], p[i]
+	}
+	return
+}
+
 func solver() {
 	var pr PathRecord
 	var i int
@@ -549,4 +613,51 @@ func solver() {
 			q.result = nextInt()
 		}
 	}
+}
+
+// An Item is something we manage in a priority queue.
+type Item struct {
+	node int // The value of the item; arbitrary.
+	cost int // The priority of the item in the queue.
+	// The index is needed by update and is maintained by the heap.Interface methods.
+	index int // The index of the item in the heap.
+}
+
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int {
+	return len(pq)
+}
+
+func (pq PriorityQueue) Less(i, j int) bool {
+	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
+	return pq[i].cost < pq[j].cost
+}
+
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+	pq[i].index = i
+	pq[j].index = j
+}
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	n := len(*pq)
+	item := x.(*Item)
+	item.index = n
+	*pq = append(*pq, item)
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	item.index = -1 // for safety
+	*pq = old[0 : n-1]
+	return item
+}
+
+func (pq *PriorityQueue) update(item *Item, value int, priority int) {
+	item.node = value
+	item.cost = priority
+	heap.Fix(pq, item.index)
 }
