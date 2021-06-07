@@ -116,6 +116,7 @@ type Ask struct {
 var direction = map[byte]int{'D': 0, 'R': 1, 'U': 2, 'L': 3}
 var di = [4]int{1, 0, -1, 0}
 var dj = [4]int{0, 1, 0, -1}
+var dd = [4]byte{'D', 'R', 'U', 'L'}
 
 var h [30][30]int
 var v [30][30]int
@@ -518,14 +519,16 @@ type Dijkstra struct {
 	prev  [30]int
 }
 
-func (g *Dijkstra) buildGridEdge() {
+func (g *Dijkstra) buildGridEdge(pr PathRecord) {
 	for i := 0; i < 30; i++ {
 		for j := 0; j < 30; j++ {
 			for d := 0; d < 4; d++ {
 				ni := i + di[d]
 				nj := j + dj[d]
 				if ni >= 0 && ni < 30 && nj >= 0 && nj < 30 {
-					g.edges[i*30+j] = append(g.edges[i*30+j], Edge{to: ni*30 + nj, cost: 5000})
+					path := pr.getPath(i, j, dd[d])
+					cost := path.SampleAverage
+					g.edges[i*30+j] = append(g.edges[i*30+j], Edge{to: ni*30 + nj, cost: cost})
 				}
 			}
 		}
@@ -535,6 +538,7 @@ func (g *Dijkstra) buildGridEdge() {
 	}
 }
 
+// TODO テスト
 // n:numNode s:source
 func (g *Dijkstra) do(s int) {
 	d := make([]int, 30)
