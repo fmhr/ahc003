@@ -22,23 +22,12 @@ scriptrun:
 toolsbuild:
 	cargo build --manifest-path=tools/Cargo.toml --release
 
-# example:
-# 	./src/solver < tools/example.in > example.out
-# 
+ 
 # vis:
 # 	cd tools &&\
 # 	cargo run --release --bin vis example.in example.out
 # 
-# 
-# buildcmd:
-# 	cd script &&\
-# 		go build
-# 
-# cmdtest:
-# 	make buildcmd
-# 	./script/script
-# 
-# 
+# TODO リアクティブ問題でどうやってうごかすか 
 # pprof:
-# 	.solver -cpuprofile cpu.prof < tools/in/0000.txt
+# 	./solver -cpuprofile cpu.prof < in/0000.txt
 # 	pprof -http=localhost:8080 cpu.prof
